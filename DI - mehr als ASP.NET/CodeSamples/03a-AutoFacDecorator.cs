@@ -1,9 +1,10 @@
 using System;
 using Autofac;
 
-// So kannst du sehr elegant zusätzliche Funktionalität um Services herumlegen, 
-// ohne die eigentliche Implementierung zu verändern – und die Verdrahtung 
-// bleibt dank Autofac‑RegisterDecorator auf Konfigurationsebene.
+// Zusätzliche Funktionalität um Services herumlegen, 
+// ohne die eigentliche Implementierung zu verändern 
+// – und die Verdrahtung bleibt dank Autofac‑RegisterDecorator 
+// auf Konfigurationsebene.
 
 namespace AutofacDecoratorDemo
 {
@@ -19,7 +20,6 @@ namespace AutofacDecoratorDemo
         public void PlaceOrder(int orderId)
         {
             Console.WriteLine($"[OrderService] Placing order {orderId}...");
-            // eigentliche Business-Logik, z.B. DB-Zugriff etc.
         }
     }
 
