@@ -174,6 +174,16 @@ namespace AutofacBeispiele
         }
     }
 
+    // Bei Autofac gilt bei Mehrfach-Registrierungen desselben Service-Typs:
+    // - Resolve<IEmailService>() liefert standardmäßig die zuletzt registrierte 
+    //   Implementierung („last registration wins“).
+    // - Resolve<IEnumerable<IEmailService>>() liefert alle Registrierungen.
+    // - Die Reihenfolge hängt von der Reihenfolge der RegisterModule<...>()-Aufrufe 
+    //   ab (später registriertes Modul kann vorherige Default-Registrierung übersteuern).
+    // Mit .PreserveExistingDefaults() kannst du verhindern, dass eine spätere Registrierung 
+    // den bisherigen Default ersetzt.
+
+
 
     // ========================================
     // Property Injection

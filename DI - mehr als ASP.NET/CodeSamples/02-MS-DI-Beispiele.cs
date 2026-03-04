@@ -93,6 +93,16 @@ namespace MicrosoftDI
     // Service Validation (ab .NET 8)
     // ========================================
 
+    // Wann ist Validierung sinnvoll?
+    // Wenn:
+    // Du eine Konsolen-App oder Library baust (nicht ASP.NET Core, dort ist es default)
+    // Du früh Fehler fangen möchtest statt zur Runtime
+    // Du eine komplexe DI-Konfiguration hast
+    // Beachte:
+    // ValidateOnBuild = true kann das Startup verlangsamen (alle Services werden validiert)
+    // In ASP.NET Core ist dies bereits aktiviert by default
+    // Fehler beim BuildServiceProvider() → App startet gar nicht (gewünscht!)
+
     public class ServiceValidationBeispiel
     {
         public static void Configure()
@@ -112,169 +122,170 @@ namespace MicrosoftDI
         }
     }
 
-// ====================================================================
-// ASP.NET Core Beispiel 
-// ====================================================================
+    // ====================================================================
+    // ASP.NET Core Beispiel 
+    // ====================================================================
 
-// using Microsoft.AspNetCore.Builder;
-// using Microsoft.Extensions.Hosting;
+    // using Microsoft.AspNetCore.Builder;
+    // using Microsoft.Extensions.Hosting;
 
-namespace MicrosoftDI.AspNetCoreExample
-{
-    public class StartupLikeExample
+    namespace MicrosoftDI.AspNetCoreExample
     {
-        public static void ConfigureWebApplication(string[] args)
+        public class StartupLikeExample
         {
-            var builder = WebApplication.CreateBuilder(args);
-
-            // Service-Registrierung
-            builder.Services.AddTransient<MicrosoftDI.IEmailService, MicrosoftDI.EmailService>();
-            builder.Services.AddScoped<MicrosoftDI.IOrderService, MicrosoftDI.OrderService>();
-            builder.Services.AddSingleton<MicrosoftDI.IConfigService, MicrosoftDI.ConfigService>();
-
-            builder.Services.AddControllers();
-
-            var app = builder.Build();
-
-            app.MapControllers();
-
-            app.Run();
-        }
-    }
-}
-
-// ====================================================================
-// WPF + Generic Host + DI
-// ====================================================================
-
-// using Microsoft.Extensions.Hosting;
-// using System.Windows;
-
-namespace MicrosoftDI.WpfExample
-{
-    // Einstiegspunkt (statt App.xaml StartupUri)
-    internal class Program
-    {
-        [STAThread]
-        public static void Main(string[] args)
-        {
-            var host = Host.CreateDefaultBuilder(args)
-                .ConfigureServices(services =>
-                {
-                    // WPF App und MainWindow über DI bereitstellen
-                    services.AddSingleton<App>();
-                    services.AddSingleton<MainWindow>();
-
-                    // Fachliche Services wiederverwenden
-                    services.AddSingleton<MicrosoftDI.IEmailService, MicrosoftDI.EmailService>();
-                    services.AddSingleton<MicrosoftDI.IOrderService, MicrosoftDI.OrderService>();
-                })
-                .Build();
-
-            // ServiceProvider als Singleton registrieren
-            // (vereinfacht den Zugriff auf Services in WPF, z.B. in XAML)
-            var serviceProvider = host.Services;
-            services.AddSingleton(serviceProvider);
-
-            // App aus dem Container holen und starten
-            var app = host.Services.GetRequiredService<App>();
-            app.Run();
-        }
-    }
-
-    // WPF App, bekommt MainWindow via DI
-    public class App : Application
-    {
-        private readonly MainWindow _mainWindow;
-
-        public App(MainWindow mainWindow)
-        {
-            _mainWindow = mainWindow;
-        }
-
-        protected override void OnStartup(StartupEventArgs e)
-        {
-            base.OnStartup(e);
-            _mainWindow.Show();
-        }
-    }
-
-    // Einfaches MainWindow, das einen Service injiziert bekommt
-    public partial class MainWindow : Window
-    {
-        private readonly MicrosoftDI.IOrderService _orderService;
-
-        public MainWindow(MicrosoftDI.IOrderService orderService)
-        {
-            _orderService = orderService;
-            InitializeComponent();
-
-            Loaded += (sender, args) =>
+            public static void ConfigureWebApplication(string[] args)
             {
-                _orderService.CreateOrder(new MicrosoftDI.Order { Id = 42 });
-            };
-        }
-    }
-}
+                var builder = WebApplication.CreateBuilder(args);
 
-// ====================================================================
-// .NET MAUI + DI
-// ====================================================================
+                // Service-Registrierung
+                builder.Services.AddTransient<MicrosoftDI.IEmailService, MicrosoftDI.EmailService>();
+                builder.Services.AddScoped<MicrosoftDI.IOrderService, MicrosoftDI.OrderService>();
+                builder.Services.AddSingleton<MicrosoftDI.IConfigService, MicrosoftDI.ConfigService>();
 
-// using Microsoft.Maui;
-// using Microsoft.Maui.Controls;
-// using Microsoft.Maui.Hosting;
+                builder.Services.AddControllers();
 
-namespace MicrosoftDI.MauiExample
-{
-    public static class MauiProgram
-    {
-        public static MauiApp CreateMauiApp()
-        {
-            var builder = MauiApp.CreateBuilder();
+                var app = builder.Build();
 
-            builder
-                .UseMauiApp<App>()
-                .ConfigureFonts(fonts =>
-                {
-                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                });
+                app.MapControllers();
 
-            // DI-Registrierungen
-            builder.Services.AddSingleton<MicrosoftDI.IEmailService, MicrosoftDI.EmailService>();
-            builder.Services.AddSingleton<MicrosoftDI.IOrderService, MicrosoftDI.OrderService>();
-
-            // Pages
-            builder.Services.AddTransient<MainPage>();
-
-            return builder.Build();
+                app.Run();
+            }
         }
     }
 
-    public partial class App : Application
+    // ====================================================================
+    // WPF + Generic Host + DI
+    // ====================================================================
+
+    // using Microsoft.Extensions.Hosting;
+    // using System.Windows;
+
+    namespace MicrosoftDI.WpfExample
     {
-        public App(MainPage mainPage)
+        // Einstiegspunkt (statt App.xaml StartupUri)
+        internal class Program
         {
-            InitializeComponent();
-            MainPage = new NavigationPage(mainPage);
-        }
-    }
-
-    public partial class MainPage : ContentPage
-    {
-        private readonly MicrosoftDI.IOrderService _orderService;
-
-        // DI per Konstruktor
-        public MainPage(MicrosoftDI.IOrderService orderService)
-        {
-            _orderService = orderService;
-
-            Title = "DI mit .NET MAUI";
-
-            Content = new VerticalStackLayout
+            [STAThread]
+            public static void Main(string[] args)
             {
-                Padding = 24,
-                Children =
+                var host = Host.CreateDefaultBuilder(args)
+                    .ConfigureServices(services =>
+                    {
+                        // WPF App und MainWindow über DI bereitstellen
+                        services.AddSingleton<App>();
+                        services.AddSingleton<MainWindow>();
+
+                        // Fachliche Services wiederverwenden
+                        services.AddSingleton<MicrosoftDI.IEmailService, MicrosoftDI.EmailService>();
+                        services.AddSingleton<MicrosoftDI.IOrderService, MicrosoftDI.OrderService>();
+                    })
+                    .Build();
+
+                // ServiceProvider als Singleton registrieren
+                // (vereinfacht den Zugriff auf Services in WPF, z.B. in XAML)
+                var serviceProvider = host.Services;
+                services.AddSingleton(serviceProvider);
+
+                // App aus dem Container holen und starten
+                var app = host.Services.GetRequiredService<App>();
+                app.Run();
+            }
+        }
+
+        // WPF App, bekommt MainWindow via DI
+        // StartupUri in XAML entfällt, da wir die App manuell starten!
+        public class App : Application
+        {
+            private readonly MainWindow _mainWindow;
+
+            public App(MainWindow mainWindow)
+            {
+                _mainWindow = mainWindow;
+            }
+
+            protected override void OnStartup(StartupEventArgs e)
+            {
+                base.OnStartup(e);
+                _mainWindow.Show();
+            }
+        }
+
+        // Einfaches MainWindow, das einen Service injiziert bekommt
+        public partial class MainWindow : Window
+        {
+            private readonly MicrosoftDI.IOrderService _orderService;
+
+            public MainWindow(MicrosoftDI.IOrderService orderService)
+            {
+                _orderService = orderService;
+                InitializeComponent();
+
+                Loaded += (sender, args) =>
+                {
+                    _orderService.CreateOrder(new MicrosoftDI.Order { Id = 42 });
+                };
+            }
+        }
+    }
+
+    // ====================================================================
+    // .NET MAUI + DI
+    // ====================================================================
+
+    // using Microsoft.Maui;
+    // using Microsoft.Maui.Controls;
+    // using Microsoft.Maui.Hosting;
+
+    namespace MicrosoftDI.MauiExample
+    {
+        public static class MauiProgram
+        {
+            public static MauiApp CreateMauiApp()
+            {
+                var builder = MauiApp.CreateBuilder();
+
+                builder
+                    .UseMauiApp<App>()
+                    .ConfigureFonts(fonts =>
+                    {
+                        fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                    });
+
+                // DI-Registrierungen
+                builder.Services.AddSingleton<MicrosoftDI.IEmailService, MicrosoftDI.EmailService>();
+                builder.Services.AddSingleton<MicrosoftDI.IOrderService, MicrosoftDI.OrderService>();
+
+                // Pages
+                builder.Services.AddTransient<MainPage>();
+
+                return builder.Build();
+            }
+        }
+
+        public partial class App : Application
+        {
+            public App(MainPage mainPage)
+            {
+                InitializeComponent();
+                MainPage = new NavigationPage(mainPage);
+            }
+        }
+
+        public partial class MainPage : ContentPage
+        {
+            private readonly MicrosoftDI.IOrderService _orderService;
+
+            // DI per Konstruktor
+            public MainPage(MicrosoftDI.IOrderService orderService)
+            {
+                _orderService = orderService;
+
+                Title = "DI mit .NET MAUI";
+
+                Content = new VerticalStackLayout
+                {
+                    Padding = 24,
+                    Children =
                 {
                     new Label { Text = "Hello DI!", FontSize = 24 },
                     new Button
@@ -286,10 +297,10 @@ namespace MicrosoftDI.MauiExample
                         })
                     }
                 }
-            };
+                };
+            }
         }
     }
-}
 
 
     // ========================================
