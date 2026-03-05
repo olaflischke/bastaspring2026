@@ -1,8 +1,10 @@
+// Aufgabe: Liste aller Orders von Kunden aus Deutschland.
+
 // PROBLEM: Frühes ToList() und Contains()
 var germanCustomers = context.Customers
     .Where(c => c.Country == "Germany")
     .Select(c => c.CustomerID)
-    .ToList();  // alle dt. IDs im Memory, auch die von Kunden ohne Order!
+    .ToList();  // -> alle dt. IDs im Memory, auch die von Kunden ohne Order!
 
 var orders = context.Orders
     // Client-seitig: Contains ist C#-Methode, kein SQL-Operator!

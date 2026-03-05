@@ -5,7 +5,15 @@ var customers = context.Customers
     .ToList();
 
 // SQL: Riesiger JOIN mit Duplikaten!
-// 1 Customer + 5 Orders * 3 OrderItems = 15 Zeilen!
+// 1 Customer + 5 Orders * 3 OrderItems = 15 Zeilen pro Kunde,
+// alle Kundendaten 15mal!
+
+
+
+
+
+
+
 
 //  LÖSUNG
 var customers = context.Customers

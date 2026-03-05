@@ -1,5 +1,12 @@
+// Aufgabe: Produkte für eine Übersicht laden.
+
 //  PROBLEM
-var products = context.Products.ToList(); // Tracking = true
+var products = context.Products.ToList(); 
+
+
+
+
+
 
 //  LÖSUNG
 var products = context.Products

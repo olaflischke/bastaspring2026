@@ -1,15 +1,27 @@
 /*
 # PROBLEM - Parallel Development
-Dev A: dotnet ef migrations add AddCustomerPhone
-Dev B: dotnet ef migrations add AddOrderNotes
+Dev A: dotnet ef migrations add AddOrderNotes
+Dev B: dotnet ef migrations add AddCustomerPhone
+
 
 # Merge-Konflikt! 
 */
 
+// DEV A:
 // Add to Order.cs
-public string? InternalNotes { get; set; }  // Dev B
+public string? InternalNotes { get; set; }  
+
+
+// DEV B:
 // Add to Customer.cs  
-public string? Phone { get; set; }         // Dev A
+public string? Phone { get; set; }
+
+
+
+
+
+
+
 
 /*
 # LÖSUNG - Team-Konventionen

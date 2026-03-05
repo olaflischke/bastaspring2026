@@ -10,6 +10,12 @@ foreach (var order in orders)
     Console.WriteLine($"Order {order.OrderID}: {customerName}");
 }
 
+
+
+
+
+
+
 // LÖSUNG 1: 1 Query!
 var orders = context.Orders
     .Include(o => o.Customer)     // JOIN Customer
